@@ -42,14 +42,22 @@ def stream_advanced_chat(
     # max_tokens=max_tokens
     # stream=True
     # extra_body={"provider": {"data_collection": "deny"}}
-    response = None
+    response = client.chat.completions.create(
+        model=(model or DEFAULT_MODEL).strip(),
+        messages=build_multimodal_messages(history, message),
+        temperature=temperature,
+        max_tokens=max_tokens,
+        stream=True,
+        extra_body={"provider": {"data_collection": "deny"}}
+    )
 
     answer = ""
     for chunk in response:
         delta = chunk.choices[0].delta.content
         if delta:
             # TODO 2: add delta to answer and yield the growing answer.
-            pass
+            answer += delta
+            yield answer
 
 
 def build_demo() -> gr.ChatInterface:
@@ -57,16 +65,22 @@ def build_demo() -> gr.ChatInterface:
     api_key_input = gr.Textbox(label="OpenRouter API Key", type="password")
 
     # TODO 3: create a gr.Dropdown for model selection using MODEL_CHOICES.
-    model_input = None
+    model_input = gr.Dropdown(label="Model", choices=MODEL_CHOICES, value=DEFAULT_MODEL)
 
     # TODO 4: create a gr.Slider for temperature from 0 to 1.5.
-    temperature_input = None
+    temperature_input = gr.Slider(label="Temperature", minimum=0, maximum=1.5, value=0.7)
 
     # TODO 5: create a gr.Slider for max tokens from 64 to 2048.
-    max_tokens_input = None
+    max_tokens_input = gr.Slider(label="Max Tokens", minimum=64, maximum=2048, value=1024)
 
     # TODO 6: return gr.ChatInterface with multimodal=True and all four inputs.
-    raise NotImplementedError
+    return gr.ChatInterface(
+        fn=stream_advanced_chat,
+        multimodal=True,
+        title=APP_TITLE,
+        textbox=gr.MultimodalTextbox(file_types=["image"]),
+        additional_inputs=[api_key_input, model_input, temperature_input, max_tokens_input]
+    )
 
 
 demo = build_demo()

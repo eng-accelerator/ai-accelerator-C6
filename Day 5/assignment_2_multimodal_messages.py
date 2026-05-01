@@ -16,7 +16,10 @@ def image_file_to_data_url(file_path: str) -> str:
     # TODO 1: read the image bytes.
     # TODO 2: base64 encode the bytes and decode to text.
     # TODO 3: return f"data:{mime_type};base64,{encoded_text}".
-    raise NotImplementedError
+    with open(path, "rb") as f:
+        image_bytes = f.read()
+    encoded_text = base64.b64encode(image_bytes).decode("utf-8")
+    return f"data:{mime_type};base64,{encoded_text}"
 
 
 def get_uploaded_file_path(file_value: Any) -> str | None:
@@ -24,7 +27,14 @@ def get_uploaded_file_path(file_value: Any) -> str | None:
     # TODO 4: if file_value is a string, return it.
     # TODO 5: if file_value is a dict, return file_value["path"] or file_value["name"].
     # TODO 6: otherwise try file_value.path or file_value.name.
-    raise NotImplementedError
+    if isinstance(file_value, str):
+        return file_value
+    if isinstance(file_value, dict):
+        return file_value.get("path") or file_value.get("name")
+    try:
+        return file_value.path or file_value.name
+    except AttributeError:
+        return None
 
 
 def build_user_content(message: dict[str, Any]) -> str | list[dict[str, Any]]:
@@ -42,7 +52,7 @@ def build_user_content(message: dict[str, Any]) -> str | list[dict[str, Any]]:
             # TODO 7: append an image_url content block.
             # Shape:
             # {"type": "image_url", "image_url": {"url": image_file_to_data_url(file_path)}}
-            pass
+            content.append({"type": "image_url", "image_url": {"url": image_file_to_data_url(file_path)}})
 
     if not content:
         return "Please send text or upload an image."
@@ -63,9 +73,11 @@ def build_multimodal_messages(
     for item in history:
         role = item.get("role")
         content = item.get("content")
-        if role in {"user", "assistant"} and isinstance(content, str) and content.strip():
-            # TODO 8: append prior text messages.
-            pass
+        if role in {"user", "assistant"} and content is not None:
+            # Preserve prior messages exactly, including any structured content blocks.
+            if isinstance(content, str):
+                content = content.strip()
+            messages.append({"role": role, "content": content})
 
-    # TODO 9: append the latest user message using build_user_content(current_message).
+    messages.append({"role": "user", "content": build_user_content(current_message)})
     return messages

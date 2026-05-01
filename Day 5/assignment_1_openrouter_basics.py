@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import os
 from typing import Any
+from dotenv import load_dotenv
+load_dotenv()  # reads .env from current working directory
 
 
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
@@ -13,7 +15,12 @@ def resolve_api_key(api_key: str | None = None) -> str:
     # TODO 1: return the stripped api_key if provided.
     # TODO 2: otherwise read OPENROUTER_API_KEY from the environment.
     # TODO 3: raise ValueError if neither exists.
-    raise NotImplementedError
+    if api_key is not None:
+        return api_key.strip()
+    api_key = os.getenv("OPENROUTER_API_KEY")
+    if api_key is None:
+        raise ValueError("API key not found")
+    return api_key.strip()
 
 
 def create_openrouter_client(api_key: str) -> Any:
@@ -21,7 +28,7 @@ def create_openrouter_client(api_key: str) -> Any:
     from openai import OpenAI
 
     # TODO 4: return OpenAI(base_url=OPENROUTER_BASE_URL, api_key=api_key)
-    raise NotImplementedError
+    return OpenAI(base_url=OPENROUTER_BASE_URL, api_key=api_key)
 
 
 def build_text_messages(
@@ -29,16 +36,18 @@ def build_text_messages(
     history: list[dict[str, Any]] | None = None,
 ) -> list[dict[str, str]]:
     """Convert prior chat history plus the new prompt into OpenRouter messages."""
-    messages: list[dict[str, str]] = []
+    messages: list[dict[str, str]] = [{"role": "user", "content": "Explain Gradio in one sentence."}]
 
     for item in history or []:
         role = item.get("role")
         content = item.get("content")
         if role in {"user", "assistant"} and isinstance(content, str) and content.strip():
             # TODO 5: append the previous message as {"role": role, "content": content.strip()}
+            messages.append({"role": role, "content": content.strip()})
             pass
 
     # TODO 6: append the latest user prompt.
+    messages.append({"role": "user", "content": user_prompt})
     return messages
 
 
@@ -55,11 +64,16 @@ def ask_text_model(
     # model=model
     # messages=build_text_messages(prompt, history)
     # extra_body={"provider": {"data_collection": "deny"}}
-    response = None
+    response = client.chat.completions.create(
+        model=model,
+        messages=build_text_messages(prompt, history),
+        extra_body={"provider": {"data_collection": "deny"}},
+    )
 
     # TODO 8: return response.choices[0].message.content or an empty string.
-    raise NotImplementedError
+    return response.choices[0].message.content or ""
+
 
 
 if __name__ == "__main__":
-    print(ask_text_model("Explain Gradio in one sentence."))
+    print(ask_text_model("Who invented it"))
