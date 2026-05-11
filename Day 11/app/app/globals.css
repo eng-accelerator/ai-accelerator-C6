@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #000000;
+  --muted: #525252;
+  --muted-2: #737373;
+  --border: rgba(0, 0, 0, 0.1);
+  --footer: #0a0a0a;
+  --ease-studio: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-2: var(--muted-2);
+  --color-border-studio: var(--border);
+  --color-footer: var(--footer);
+  --font-sans: var(--font-inter);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --ease-studio: var(--ease-studio);
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+  cursor: none;
+}
+
+body {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a,
+button {
+  cursor: none;
+}
+
+.headline {
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+}
+
+.mono-meta {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.reveal-span {
+  display: inline-block;
+  overflow: hidden;
+}
+
+.reveal-span > span {
+  display: inline-block;
+  transform: translateY(100%);
+  animation: studio-reveal 1s var(--ease-studio) forwards;
+}
+
+@keyframes studio-reveal {
+  to {
+    transform: translateY(0%);
+  }
+}
+
+.marquee-track {
+  animation: studio-marquee 30s linear infinite;
+}
+
+.marquee-container:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes studio-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.studio-image {
+  filter: grayscale(100%);
+  transform: scale(1);
+  transition:
+    filter 700ms var(--ease-studio),
+    transform 700ms var(--ease-studio);
+}
+
+.studio-image:hover {
+  filter: grayscale(0%);
+  transform: scale(1.05);
+}
+
+.studio-card {
+  transition: background-color 700ms var(--ease-studio);
+}
+
+.studio-card:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.studio-hover-line {
+  position: relative;
+}
+
+.studio-hover-line::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 700ms var(--ease-studio);
+}
+
+.studio-hover-line:hover::after {
+  transform: scaleX(1);
+  transform-origin: left center;
+}
+
+::selection {
+  background: #000000;
+  color: #ffffff;
+}
